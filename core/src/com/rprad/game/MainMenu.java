@@ -23,8 +23,8 @@ public class MainMenu implements Screen {
     as well as your highest score.
      */
     private BitmapFont font;
-    private int screen_width;
-    private int screen_height;
+    private float screen_width;
+    private float screen_height;
     private Viewport viewport;
     private OrthographicCamera camera;
     private FlashDash game;
