@@ -32,6 +32,7 @@ public class MainMenu implements Screen {
     private Texture playButton;
     private Texture background;
     private int score;
+    private static final int pb_size = 50;
     public MainMenu(FlashDash game){
         font = new BitmapFont();
         this.game = game;
@@ -45,6 +46,7 @@ public class MainMenu implements Screen {
         camera = new OrthographicCamera();
         camera.translate(screen_width / 2, screen_height/2, 0);
         viewport = new ScreenViewport(camera);
+
     }
 
     @Override
@@ -66,28 +68,35 @@ public class MainMenu implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         game.batch.begin();
         game.batch.setProjectionMatrix(camera.combined);
+
 //        draw the background
         game.batch.draw(background, 0, 0);
-        game.batch.draw(
-                menuBox,
-                screen_width / 2 - screen_width / 4,
-                screen_height / 2 - screen_height / 4,
-                screen_width / 2,
-                screen_height / 2
-        );
+//        game.batch.draw(
+//                menuBox,
+//                screen_width / 2 - screen_width / 4,
+//                screen_height / 2 - screen_height / 4,
+//                screen_width / 2,
+//                screen_height / 2
+//        );
         game.batch.draw(
                 playButton,
                 screen_width / 2 - 25,
                 screen_height / 2 - 25,
-                50,  50
+                pb_size,  pb_size
         );
         font.draw(game.batch, "FLASH DASH", screen_width / 3f, screen_height * 3f / 4.15f);
         game.batch.end();
     }
     public void update (float delta) {
+        if(screen_width != Gdx.graphics.getWidth() || screen_height != Gdx.graphics.getHeight()){
+            screen_width = Gdx.graphics.getWidth();
+            screen_height = Gdx.graphics.getHeight();
+            resize((int)screen_width, (int)screen_height);
+        }
 //        Check for changes to width and height
 //        Check if the user presses the "Enter" key or clicks the play button
 //        to start the game.
+
         if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
             game.setScreen(new PlayScreen(this.game));
             dispose();
@@ -95,19 +104,22 @@ public class MainMenu implements Screen {
         if(Gdx.input.isTouched()){
 //            Check x-coordinate is in the range [screen_width / 2 - 25, screen_width / 2 + 25] and y is in the range
 //            [screen_height / 2 - 25, screen_height / 2 + 25]
-            if(Gdx.input.getX() >= screen_width / 2 - 25
-                && Gdx.input.getX() <= screen_width / 2 + 25
-                && Gdx.input.getY() >= screen_height / 2 - 25
-            && Gdx.input.getY() <= screen_height / 2 + 25){
+            if(Gdx.input.getX() >= screen_width / 2 - pb_size / 2f
+                && Gdx.input.getX() <= screen_width / 2 + pb_size / 2f
+                && Gdx.input.getY() >= screen_height / 2 - pb_size / 2f
+            && Gdx.input.getY() <= screen_height / 2 + pb_size / 2f){
                 game.setScreen(new PlayScreen(this.game));
                 dispose();
             }
-
         }
+
     }
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
+        camera.setToOrtho(false);
+        camera.update();
+        game.batch.setProjectionMatrix(camera.combined);
     }
 
     @Override
