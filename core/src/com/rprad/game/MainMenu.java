@@ -7,6 +7,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -25,7 +26,7 @@ public class MainMenu implements Screen {
     private BitmapFont font;
     private float screen_width;
     private float screen_height;
-    private Viewport viewport;
+    private ScreenViewport viewport;
     private OrthographicCamera camera;
     private FlashDash game;
     private Texture menuBox;
@@ -34,8 +35,8 @@ public class MainMenu implements Screen {
     private int score;
     private static final int pb_size = 50;
     public MainMenu(FlashDash game){
-        font = new BitmapFont();
         this.game = game;
+        font = new BitmapFont();
         this.score = readScore();
         screen_width = Gdx.graphics.getWidth();
         screen_height = Gdx.graphics.getHeight();
@@ -44,7 +45,7 @@ public class MainMenu implements Screen {
         playButton = new Texture("playbutton.png");
 //        Icon made by Freepik on Flaticon
         camera = new OrthographicCamera();
-        camera.translate(screen_width / 2, screen_height/2, 0);
+        camera.translate(screen_width / 2, screen_height/2, 0); // Move to top left
         viewport = new ScreenViewport(camera);
 
     }
@@ -64,10 +65,7 @@ public class MainMenu implements Screen {
     @Override
     public void render(float delta) {
         update(delta);
-        Gdx.gl.glClearColor(1, 1, 1, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         game.batch.begin();
-        game.batch.setProjectionMatrix(camera.combined);
 
 //        draw the background
         game.batch.draw(background, 0, 0);
@@ -80,11 +78,10 @@ public class MainMenu implements Screen {
 //        );
         game.batch.draw(
                 playButton,
-                screen_width / 2 - 25,
-                screen_height / 2 - 25,
+                screen_width / 2 - pb_size / 2f,
+                screen_height / 2 - pb_size / 2f,
                 pb_size,  pb_size
         );
-        font.draw(game.batch, "FLASH DASH", screen_width / 3f, screen_height * 3f / 4.15f);
         game.batch.end();
     }
     public void update (float delta) {
@@ -98,8 +95,7 @@ public class MainMenu implements Screen {
 //        to start the game.
 
         if(Gdx.input.isKeyPressed(Input.Keys.ENTER)){
-            game.setScreen(new PlayScreen(this.game));
-            dispose();
+            startPlaying();
         }
         if(Gdx.input.isTouched()){
 //            Check x-coordinate is in the range [screen_width / 2 - 25, screen_width / 2 + 25] and y is in the range
@@ -108,11 +104,14 @@ public class MainMenu implements Screen {
                 && Gdx.input.getX() <= screen_width / 2 + pb_size / 2f
                 && Gdx.input.getY() >= screen_height / 2 - pb_size / 2f
             && Gdx.input.getY() <= screen_height / 2 + pb_size / 2f){
-                game.setScreen(new PlayScreen(this.game));
-                dispose();
+                startPlaying();
             }
         }
 
+    }
+    public void startPlaying(){
+        game.setScreen(new PlayScreen(this.game));
+        dispose();
     }
     @Override
     public void resize(int width, int height) {
@@ -142,6 +141,7 @@ public class MainMenu implements Screen {
         background.dispose();
         menuBox.dispose();
         playButton.dispose();
+        game.dispose();
 //        floor.dispose();
     }
     private int readScore () {
