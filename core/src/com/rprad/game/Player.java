@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class Player extends Sprite {
-    enum State{Dashing, Falling, Dead}
+    enum State{Idle, Dashing, Dead}
     private State state;
     private static final float JUMP_DISTANCE = 100f;
     private int numJumps;
@@ -20,9 +20,11 @@ public class Player extends Sprite {
     private World world;
     Sprite sprite;
     private PlayScreen rscreen;
-    private Animation<TextureRegion> dash;
+    private Animation<TextureRegion> dashAnimation;
+    private Animation<TextureRegion> deathAnimation;
     private Sprite baseSprite;
     public Player(PlayScreen screen){
+        this.state = State.Idle;
         this.rscreen = screen;
         numJumps = 2;
         sprite = new Sprite(new Texture("sprite-idle.png"));
@@ -40,12 +42,20 @@ public class Player extends Sprite {
         Fixture fixture = body.createFixture(fdef);
         shape.dispose();
     }
-
+    public void move(float x, float y){
+        if(state != State.Dashing) {
+            this.state = State.Dashing;
+            body.applyLinearImpulse(new Vector2(x*100000, y*100000), body.getPosition(), true);
+        }
+//        Move the character vertically, but not horizontally
+        this.state = State.Idle;
+    }
     public void handleInput(float dt){
         if(Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)){
             if (Gdx.input.isKeyPressed(Input.Keys.W)){
                 if(Gdx.input.isKeyPressed(Input.Keys.D)){
                     if(numJumps > 0){
+                        move(1, 1);
                         numJumps--;
                         System.out.println("Jumps: " + numJumps);
 
@@ -55,6 +65,7 @@ public class Player extends Sprite {
 //                    Check if character's jumps <= 0
 //                    If not, apply up-dash
                     if(numJumps > 0){
+                        move(0, 1);
                         System.out.println("Top dash");
                         numJumps--;
                         System.out.println("Jumps: " + numJumps);
@@ -65,23 +76,33 @@ public class Player extends Sprite {
             else if (Gdx.input.isKeyPressed(Input.Keys.S)){
                 if (Gdx.input.isKeyPressed(Input.Keys.D)){
                     if(numJumps > 0){
-                        body.applyLinearImpulse(new Vector2(JUMP_DISTANCE, JUMP_DISTANCE), body.getPosition(), true);
+                        move(1, -1);
                         numJumps--;
                         System.out.println("Jumps: " + numJumps);
                     }
                 }
                 else {
                     if(numJumps > 0){
+                        move(0, -1);
                          numJumps--;
                          System.out.println("Jumps: " + numJumps);
                     }
                 }
             }
         }
-        update();
+
     }
-    public void update(){
+    public void kill(){
+        this.state = State.Dead;
+        rscreen.getGame().setScreen(new MainMenu(rscreen.getGame()));
+    }
+    public void update(float delta){
         sprite.setPosition(body.getPosition().x, body.getPosition().y);
+        if(body.getPosition().x <= 0 || body.getPosition().x >= rscreen.getWidth()
+        || body.getPosition().y <= 0 || body.getPosition().y >= rscreen.getHeight()){
+            kill();
+        }
+        handleInput(delta);
     }
     public void render(SpriteBatch batch){
         sprite.draw(batch);

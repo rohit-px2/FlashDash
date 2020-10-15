@@ -15,25 +15,34 @@ public class PlayScreen implements Screen {
     /*
     The main game screen. Holds all the game logic.
      */
+    private float accumulator;
+    private int numIterations;
+    private static final float fixedTimeStep = 1f/144f;
+    private static final int MAX_UPDATE_ITERATIONS = 5;
+
     private World world;
     private FlashDash game;
     private OrthographicCamera camera;
     private ScreenViewport viewport;
-
+    private static final int VELOCITY_ITERATIONS = 6;
+    private static final int POSITION_ITERATIONS = 2;
+    private Texture background;
     private Player character;
     private BitmapFont font;
     private float screen_width;
     private float screen_height;
-    private static final float x_Gravity = -300f;
-    private static final float y_Gravity = -98f;
+    private static final float x_Gravity = 0f;
+    private static final float y_Gravity = 0f;
     Texture img;
     public PlayScreen(FlashDash game){
         this.game = game;
-        this.world = new World(new Vector2(x_Gravity, 0), true);
+        this.world = new World(new Vector2(x_Gravity, y_Gravity), true);
         this.character = new Player(this);
+        this.background = new Texture("flappy_background.png");
         camera = new OrthographicCamera();
         camera.translate(screen_width / 2, screen_height/2, 0); // Move to top left
         viewport = new ScreenViewport(camera);
+        accumulator = 0f;
     }
 
     @Override
@@ -44,7 +53,7 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         update(delta);
         game.batch.begin();
-        game.batch.draw(new Texture("badlogic.jpg"), 0, 0);
+        game.batch.draw(background, 0, 0);
         character.render(game.batch);
         game.batch.end();
     }
@@ -55,9 +64,14 @@ public class PlayScreen implements Screen {
             screen_height = Gdx.graphics.getHeight();
             resize((int)screen_width, (int)screen_height);
         }
-        character.handleInput(delta);
-        world.step(Gdx.graphics.getDeltaTime(), 12, 4);
+        accumulator += Math.min(delta, 0.25f);
+        if(accumulator >= fixedTimeStep){
+            accumulator -= fixedTimeStep;
+            world.step(fixedTimeStep, 6, 2);
+        }
+        character.update(delta);
     }
+
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
@@ -73,6 +87,15 @@ public class PlayScreen implements Screen {
     public World getWorld(){
         return this.world;
     }
+    public float getWidth(){
+        return this.screen_width;
+    }
+    public float getHeight(){
+        return this.screen_height;
+    }
+    public FlashDash getGame(){
+        return this.game;
+    }
     @Override
     public void resume() {
 
@@ -82,9 +105,15 @@ public class PlayScreen implements Screen {
     public void hide() {
 
     }
-
+    public void setBackground(String path){
+        this.background = new Texture(path);
+    }
     @Override
     public void dispose() {
-
+        game.dispose();
+        world.dispose();
+        background.dispose();
+        font.dispose();
+        character.dispose();
     }
 }
