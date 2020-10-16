@@ -31,21 +31,23 @@ public class Player extends Sprite {
     private Animation<TextureRegion> deathAnimation;
     private Sprite baseSprite;
     private TextureAtlas atlas;
+    private float frameTimer;
     public Player(PlayScreen screen){
+        frameTimer = 0f;
         spriteSheet = new Texture("characterPack.png");
         Array<TextureRegion> frames = new Array<>();
         for(int i = 2; i < 6; i++){
             frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
         }
-        idleAnimation = new Animation<>(1f/6f, frames);
+        idleAnimation = new Animation<>(1f/6f, frames, Animation.PlayMode.LOOP);
         frames.clear();
         for(int i = 0; i < 2; i++){
             frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
         }
-        downDashAnimation = new Animation<>(0.1f, frames);
+        downDashAnimation = new Animation<>(0.1f, frames, Animation.PlayMode.LOOP);
         frames.clear();
         frames.add(new TextureRegion(spriteSheet, 6 * 50, 0, 50, 37));
-        defaultDashAnimation = new Animation<>(0.2f, frames);
+        defaultDashAnimation = new Animation<>(0.2f, frames, Animation.PlayMode.LOOP);
         frames.clear();
         isMoving = false;
         this.state = State.Idle;
@@ -73,6 +75,17 @@ public class Player extends Sprite {
         body.setLinearVelocity(JUMP_SPEED * x, JUMP_SPEED * y);
         System.out.println(body.getLinearVelocity().toString());
 //        Move the character vertically, but not horizontally
+    }
+    public TextureRegion getFrame (float delta) {
+        switch(this.state){
+            case DownDashing:
+                return downDashAnimation.getKeyFrame(delta);
+            case Dashing:
+                return defaultDashAnimation.getKeyFrame(delta);
+            case Idle:
+            default:
+                return idleAnimation.getKeyFrame(delta);
+        }
     }
     public void handleInput(float dt){
         if(Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)){
@@ -127,12 +140,14 @@ public class Player extends Sprite {
         rScreen.getGame().setScreen(new MainMenu(rScreen.getGame()));
     }
     public void update(float delta){
+        frameTimer += delta;
         if(isMoving){
             airTime += delta;
             if(airTime > JUMP_DURATION){
                 stopMoving();
             }
         }
+        sprite.setRegion(getFrame(frameTimer));
         sprite.setPosition(body.getPosition().x * FlashDash.PPM, body.getPosition().y * FlashDash.PPM);
         if(body.getPosition().x <= 0 || body.getPosition().x >= rScreen.getWidth()
         || body.getPosition().y <= 0 || body.getPosition().y >= rScreen.getHeight()){
