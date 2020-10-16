@@ -1,21 +1,20 @@
 package com.rprad.game;
 
 import com.badlogic.gdx.Gdx;
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 
 public class Player extends Sprite {
-    public static final float JUMP_DURATION = 0.5f;
-    enum State{Idle, Dashing, Dead}
+    public static final float JUMP_DURATION = 0.05f;
+    enum State{Idle, DownDashing, Dashing, Dead}
     private State state;
-    private static final float JUMP_DISTANCE = 100f;
+    private static final float JUMP_SPEED = 30f;
     private boolean isMoving;
     private float airTime;
     private int numJumps;
@@ -24,11 +23,30 @@ public class Player extends Sprite {
     private float screen_width;
     private float screen_height;
     Sprite sprite;
-    private final PlayScreen rScreen;
-    private Animation<TextureRegion> dashAnimation;
+    private Texture spriteSheet;
+    private PlayScreen rScreen;
+    private Animation<TextureRegion> idleAnimation;
+    private Animation<TextureRegion> defaultDashAnimation;
+    private Animation<TextureRegion> downDashAnimation;
     private Animation<TextureRegion> deathAnimation;
     private Sprite baseSprite;
+    private TextureAtlas atlas;
     public Player(PlayScreen screen){
+        spriteSheet = new Texture("characterPack.png");
+        Array<TextureRegion> frames = new Array<>();
+        for(int i = 2; i < 6; i++){
+            frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
+        }
+        idleAnimation = new Animation<>(1f/6f, frames);
+        frames.clear();
+        for(int i = 0; i < 2; i++){
+            frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
+        }
+        downDashAnimation = new Animation<>(0.1f, frames);
+        frames.clear();
+        frames.add(new TextureRegion(spriteSheet, 6 * 50, 0, 50, 37));
+        defaultDashAnimation = new Animation<>(0.2f, frames);
+        frames.clear();
         isMoving = false;
         this.state = State.Idle;
         this.rScreen = screen;
@@ -38,10 +56,10 @@ public class Player extends Sprite {
         // Body for box2d physics
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.position.set(sprite.getX(), sprite.getY());
+        bdef.position.set(sprite.getX() / FlashDash.PPM, sprite.getY() / FlashDash.PPM);
         body = rScreen.getWorld().createBody(bdef);
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(sprite.getWidth() / 2, sprite.getHeight() / 2);
+        shape.setAsBox(sprite.getWidth() / FlashDash.PPM / 2, sprite.getHeight() / FlashDash.PPM / 2);
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
         fdef.density = 1f;
@@ -49,8 +67,10 @@ public class Player extends Sprite {
         shape.dispose();
     }
     public void move(float x, float y){
+        if(y < 0) this.state = State.DownDashing;
+        else this.state = State.Dashing;
         isMoving = true;
-        body.setLinearVelocity(10000 * x, 10000 * y);
+        body.setLinearVelocity(JUMP_SPEED * x, JUMP_SPEED * y);
         System.out.println(body.getLinearVelocity().toString());
 //        Move the character vertically, but not horizontally
     }
@@ -100,6 +120,7 @@ public class Player extends Sprite {
         System.out.println(body.getLinearVelocity().toString());
         isMoving = false;
         airTime = 0f;
+        this.state = State.Idle;
     }
     public void kill(){
         this.state = State.Dead;
@@ -112,13 +133,14 @@ public class Player extends Sprite {
                 stopMoving();
             }
         }
-        sprite.setPosition(body.getPosition().x, body.getPosition().y);
+        sprite.setPosition(body.getPosition().x * FlashDash.PPM, body.getPosition().y * FlashDash.PPM);
         if(body.getPosition().x <= 0 || body.getPosition().x >= rScreen.getWidth()
         || body.getPosition().y <= 0 || body.getPosition().y >= rScreen.getHeight()){
             kill();
         }
         handleInput(delta);
     }
+
     public void render(SpriteBatch batch){
         sprite.draw(batch);
     }
