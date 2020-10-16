@@ -87,6 +87,7 @@ public class PlayScreen implements Screen {
     public World getWorld(){
         return this.world;
     }
+
     public float getWidth(){
         return this.screen_width;
     }

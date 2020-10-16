@@ -12,20 +12,26 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
 public class Player extends Sprite {
+    public static final float JUMP_DURATION = 0.5f;
     enum State{Idle, Dashing, Dead}
     private State state;
     private static final float JUMP_DISTANCE = 100f;
+    private boolean isMoving;
+    private float airTime;
     private int numJumps;
     private Body body;
     private World world;
+    private float screen_width;
+    private float screen_height;
     Sprite sprite;
-    private PlayScreen rscreen;
+    private final PlayScreen rScreen;
     private Animation<TextureRegion> dashAnimation;
     private Animation<TextureRegion> deathAnimation;
     private Sprite baseSprite;
     public Player(PlayScreen screen){
+        isMoving = false;
         this.state = State.Idle;
-        this.rscreen = screen;
+        this.rScreen = screen;
         numJumps = 2;
         sprite = new Sprite(new Texture("sprite-idle.png"));
         sprite.setPosition((Gdx.graphics.getWidth() - sprite.getWidth()) / 2f, (Gdx.graphics.getHeight() - sprite.getHeight()) / 2f);
@@ -33,7 +39,7 @@ public class Player extends Sprite {
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.position.set(sprite.getX(), sprite.getY());
-        body = rscreen.getWorld().createBody(bdef);
+        body = rScreen.getWorld().createBody(bdef);
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(sprite.getWidth() / 2, sprite.getHeight() / 2);
         FixtureDef fdef = new FixtureDef();
@@ -43,12 +49,10 @@ public class Player extends Sprite {
         shape.dispose();
     }
     public void move(float x, float y){
-        if(state != State.Dashing) {
-            this.state = State.Dashing;
-            body.applyLinearImpulse(new Vector2(x*100000, y*100000), body.getPosition(), true);
-        }
+        isMoving = true;
+        body.setLinearVelocity(10000 * x, 10000 * y);
+        System.out.println(body.getLinearVelocity().toString());
 //        Move the character vertically, but not horizontally
-        this.state = State.Idle;
     }
     public void handleInput(float dt){
         if(Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)){
@@ -66,7 +70,6 @@ public class Player extends Sprite {
 //                    If not, apply up-dash
                     if(numJumps > 0){
                         move(0, 1);
-                        System.out.println("Top dash");
                         numJumps--;
                         System.out.println("Jumps: " + numJumps);
 
@@ -92,14 +95,26 @@ public class Player extends Sprite {
         }
 
     }
+    public void stopMoving () {
+        body.setLinearVelocity(0f, 0f);
+        System.out.println(body.getLinearVelocity().toString());
+        isMoving = false;
+        airTime = 0f;
+    }
     public void kill(){
         this.state = State.Dead;
-        rscreen.getGame().setScreen(new MainMenu(rscreen.getGame()));
+        rScreen.getGame().setScreen(new MainMenu(rScreen.getGame()));
     }
     public void update(float delta){
+        if(isMoving){
+            airTime += delta;
+            if(airTime > JUMP_DURATION){
+                stopMoving();
+            }
+        }
         sprite.setPosition(body.getPosition().x, body.getPosition().y);
-        if(body.getPosition().x <= 0 || body.getPosition().x >= rscreen.getWidth()
-        || body.getPosition().y <= 0 || body.getPosition().y >= rscreen.getHeight()){
+        if(body.getPosition().x <= 0 || body.getPosition().x >= rScreen.getWidth()
+        || body.getPosition().y <= 0 || body.getPosition().y >= rScreen.getHeight()){
             kill();
         }
         handleInput(delta);
