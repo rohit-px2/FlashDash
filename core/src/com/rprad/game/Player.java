@@ -56,7 +56,7 @@ public class Player extends Sprite {
 
         isMoving = false;
         this.state = State.Idle;
-        numJumps = 50;
+        numJumps = 2;
         this.rScreen = screen;
         sprite = new Sprite(new Texture("sprite-idle.png"));
         sprite.setPosition((Gdx.graphics.getWidth() - sprite.getWidth()) / 2f, (Gdx.graphics.getHeight() - sprite.getHeight()) / 2f);
