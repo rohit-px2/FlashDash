@@ -53,7 +53,9 @@ public class PlayScreen implements Screen {
     public void render(float delta) {
         update(delta);
         game.batch.begin();
-        game.batch.draw(background, 0, 0);
+        if(background.getWidth() > Gdx.graphics.getWidth() && background.getHeight() > Gdx.graphics.getHeight())
+            game.batch.draw(background, 0, 0);
+        else game.batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         character.render(game.batch);
         game.batch.end();
     }

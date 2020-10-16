@@ -68,7 +68,9 @@ public class MainMenu implements Screen {
         game.batch.begin();
 
 //        draw the background
-        game.batch.draw(background, 0, 0);
+        if(background.getWidth() > Gdx.graphics.getWidth() && background.getHeight() > Gdx.graphics.getHeight())
+            game.batch.draw(background, 0, 0);
+        else game.batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 //        game.batch.draw(
 //                menuBox,
 //                screen_width / 2 - screen_width / 4,
