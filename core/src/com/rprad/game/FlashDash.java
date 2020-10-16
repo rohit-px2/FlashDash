@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class FlashDash extends Game {
+	public static final float PPM = 100f;
 	public static final int WIDTH = 300;
 	public static final int HEIGHT = 700;
 	public SpriteBatch batch;
