@@ -11,10 +11,10 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
 public class Player extends Sprite {
-    public static final float JUMP_DURATION = 0.5f;
+    public static final float JUMP_DURATION = 0.1f;
     enum State{Idle, DownDashing, Dashing, Dead}
     private State state;
-    private static final float JUMP_SPEED = 5f;
+    private static final float JUMP_SPEED = 20f;
     private boolean isMoving;
     private float airTime;
     private int numJumps;
@@ -65,6 +65,7 @@ public class Player extends Sprite {
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.position.set(sprite.getX() / FlashDash.PPM, sprite.getY() / FlashDash.PPM);
         body = rScreen.getWorld().createBody(bdef);
+        body.setUserData("Player");
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(sprite.getWidth() / FlashDash.PPM / 2, sprite.getHeight() / FlashDash.PPM / 2);
         FixtureDef fdef = new FixtureDef();
@@ -95,6 +96,7 @@ public class Player extends Sprite {
         }
     }
     private void handleInput(float dt){
+//        Keyboard input
         if(Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)){
             if (Gdx.input.isKeyPressed(Input.Keys.W)){
                 if(Gdx.input.isKeyPressed(Input.Keys.D)){
@@ -135,9 +137,11 @@ public class Player extends Sprite {
             else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 if (numJumps > 0) {
                    move(1, 0);
+                   numJumps--;
                 }
             }
         }
+//       TODO: Android/Swipe Input Processing
 
     }
     private void stopMoving () {
