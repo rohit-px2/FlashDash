@@ -11,10 +11,10 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 
 public class Player extends Sprite {
-    public static final float JUMP_DURATION = 0.05f;
+    public static final float JUMP_DURATION = 0.5f;
     enum State{Idle, DownDashing, Dashing, Dead}
     private State state;
-    private static final float JUMP_SPEED = 30f;
+    private static final float JUMP_SPEED = 5f;
     private boolean isMoving;
     private float airTime;
     private int numJumps;
@@ -34,25 +34,30 @@ public class Player extends Sprite {
     private float frameTimer;
     public Player(PlayScreen screen){
         frameTimer = 0f;
+//        Creating Player Animations
         spriteSheet = new Texture("characterPack.png");
         Array<TextureRegion> frames = new Array<>();
+
         for(int i = 2; i < 6; i++){
             frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
         }
         idleAnimation = new Animation<>(1f/6f, frames, Animation.PlayMode.LOOP);
         frames.clear();
+
         for(int i = 0; i < 2; i++){
             frames.add(new TextureRegion(spriteSheet, i * 50, 0, 50, 37));
         }
         downDashAnimation = new Animation<>(0.1f, frames, Animation.PlayMode.LOOP);
         frames.clear();
+
         frames.add(new TextureRegion(spriteSheet, 6 * 50, 0, 50, 37));
         defaultDashAnimation = new Animation<>(0.2f, frames, Animation.PlayMode.LOOP);
         frames.clear();
+
         isMoving = false;
         this.state = State.Idle;
+        numJumps = 50;
         this.rScreen = screen;
-        numJumps = 2;
         sprite = new Sprite(new Texture("sprite-idle.png"));
         sprite.setPosition((Gdx.graphics.getWidth() - sprite.getWidth()) / 2f, (Gdx.graphics.getHeight() - sprite.getHeight()) / 2f);
         // Body for box2d physics
@@ -68,7 +73,8 @@ public class Player extends Sprite {
         Fixture fixture = body.createFixture(fdef);
         shape.dispose();
     }
-    public void move(float x, float y){
+    private void move(float x, float y){
+        stopMoving();
         if(y < 0) this.state = State.DownDashing;
         else this.state = State.Dashing;
         isMoving = true;
@@ -76,7 +82,8 @@ public class Player extends Sprite {
         System.out.println(body.getLinearVelocity().toString());
 //        Move the character vertically, but not horizontally
     }
-    public TextureRegion getFrame (float delta) {
+    private TextureRegion getFrame (float delta) {
+//        returns the animation frame the sprite should be at.
         switch(this.state){
             case DownDashing:
                 return downDashAnimation.getKeyFrame(delta);
@@ -87,7 +94,7 @@ public class Player extends Sprite {
                 return idleAnimation.getKeyFrame(delta);
         }
     }
-    public void handleInput(float dt){
+    private void handleInput(float dt){
         if(Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)){
             if (Gdx.input.isKeyPressed(Input.Keys.W)){
                 if(Gdx.input.isKeyPressed(Input.Keys.D)){
@@ -125,19 +132,24 @@ public class Player extends Sprite {
                     }
                 }
             }
+            else if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                if (numJumps > 0) {
+                   move(1, 0);
+                }
+            }
         }
 
     }
-    public void stopMoving () {
+    private void stopMoving () {
         body.setLinearVelocity(0f, 0f);
-        System.out.println(body.getLinearVelocity().toString());
         isMoving = false;
         airTime = 0f;
         this.state = State.Idle;
     }
-    public void kill(){
+    private void kill(){
         this.state = State.Dead;
         rScreen.getGame().setScreen(new MainMenu(rScreen.getGame()));
+        dispose();
     }
     public void update(float delta){
         frameTimer += delta;
@@ -149,8 +161,8 @@ public class Player extends Sprite {
         }
         sprite.setRegion(getFrame(frameTimer));
         sprite.setPosition(body.getPosition().x * FlashDash.PPM, body.getPosition().y * FlashDash.PPM);
-        if(body.getPosition().x <= 0 || body.getPosition().x >= rScreen.getWidth()
-        || body.getPosition().y <= 0 || body.getPosition().y >= rScreen.getHeight()){
+        if(body.getPosition().x <= 0 || body.getPosition().x >= rScreen.getWidth() / FlashDash.PPM
+        || body.getPosition().y <= 0 || body.getPosition().y >= rScreen.getHeight() / FlashDash.PPM){
             kill();
         }
         handleInput(delta);
@@ -160,6 +172,7 @@ public class Player extends Sprite {
         sprite.draw(batch);
     }
     public void dispose(){
+        world.dispose();
 
     }
 }
