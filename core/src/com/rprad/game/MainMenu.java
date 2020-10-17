@@ -1,19 +1,15 @@
 package com.rprad.game;
 
 
-import com.badlogic.gdx.Game;
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,15 +19,15 @@ public class MainMenu implements Screen {
     Main Menu Screen, which runs on startup. Contains a "play" button,
     as well as your highest score.
      */
-    private BitmapFont font;
+    private final BitmapFont font;
     private float screen_width;
     private float screen_height;
-    private ScreenViewport viewport;
-    private OrthographicCamera camera;
-    private FlashDash game;
-    private Texture menuBox;
-    private Texture playButton;
-    private Texture background;
+    private final ScreenViewport viewport;
+    private final OrthographicCamera camera;
+    private final FlashDash game;
+    private final Texture menuBox;
+    private final Texture playButton;
+    private final Texture background;
     private int score;
     private static final int pb_size = 50;
     public MainMenu(FlashDash game){
