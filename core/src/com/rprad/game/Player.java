@@ -3,7 +3,6 @@ package com.rprad.game;
 import com.badlogic.gdx.Gdx;
 
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
@@ -18,21 +17,20 @@ public class Player extends Sprite {
     private boolean isMoving;
     private float airTime;
     private int numJumps;
-    private Body body;
+    private final Body body;
     private World world;
     private float screen_width;
     private float screen_height;
     Sprite sprite;
     private Texture spriteSheet;
     private PlayScreen rScreen;
-    private Animation<TextureRegion> idleAnimation;
-    private Animation<TextureRegion> defaultDashAnimation;
-    private Animation<TextureRegion> downDashAnimation;
-    private Animation<TextureRegion> deathAnimation;
-    private Sprite baseSprite;
-    private TextureAtlas atlas;
+    private final Animation<TextureRegion> idleAnimation;
+    private final Animation<TextureRegion> defaultDashAnimation;
+    private final Animation<TextureRegion> downDashAnimation;
+    private  Animation<TextureRegion> deathAnimation;
     private float frameTimer;
     public Player(PlayScreen screen){
+        this.rScreen = screen;
         frameTimer = 0f;
 //        Creating Player Animations
         spriteSheet = new Texture("characterPack.png");
@@ -53,18 +51,21 @@ public class Player extends Sprite {
         frames.add(new TextureRegion(spriteSheet, 6 * 50, 0, 50, 37));
         defaultDashAnimation = new Animation<>(0.2f, frames, Animation.PlayMode.LOOP);
         frames.clear();
-
+        // Setting up movement variables
         isMoving = false;
         this.state = State.Idle;
         numJumps = 2;
-        this.rScreen = screen;
+
+        // Creating sprite
         sprite = new Sprite(new Texture("sprite-idle.png"));
         sprite.setPosition((Gdx.graphics.getWidth() - sprite.getWidth()) / 2f, (Gdx.graphics.getHeight() - sprite.getHeight()) / 2f);
+
         // Body for box2d physics
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.position.set(sprite.getX() / FlashDash.PPM, sprite.getY() / FlashDash.PPM);
-        body = rScreen.getWorld().createBody(bdef);
+        world = rScreen.getWorld();
+        body = world.createBody(bdef);
         body.setUserData("Player");
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(sprite.getWidth() / FlashDash.PPM / 2, sprite.getHeight() / FlashDash.PPM / 2);
@@ -142,7 +143,6 @@ public class Player extends Sprite {
             }
         }
 //       TODO: Android/Swipe Input Processing
-
     }
     private void stopMoving () {
         body.setLinearVelocity(0f, 0f);

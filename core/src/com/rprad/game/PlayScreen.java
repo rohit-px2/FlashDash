@@ -19,7 +19,6 @@ public class PlayScreen implements Screen {
     private int numIterations;
     private static final float fixedTimeStep = 1f/144f;
     private static final int MAX_UPDATE_ITERATIONS = 5;
-
     private World world;
     private FlashDash game;
     private OrthographicCamera camera;
