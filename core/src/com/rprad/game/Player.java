@@ -19,15 +19,15 @@ public class Player extends Sprite {
     private int numJumps;
     private final Body body;
     private World world;
-    private float screen_width;
-    private float screen_height;
+//    private float screen_width;
+//    private float screen_height;
     Sprite sprite;
     private Texture spriteSheet;
     private PlayScreen rScreen;
     private final Animation<TextureRegion> idleAnimation;
     private final Animation<TextureRegion> defaultDashAnimation;
     private final Animation<TextureRegion> downDashAnimation;
-    private  Animation<TextureRegion> deathAnimation;
+//    private  Animation<TextureRegion> deathAnimation;
     private float frameTimer;
     public Player(PlayScreen screen){
         this.rScreen = screen;
